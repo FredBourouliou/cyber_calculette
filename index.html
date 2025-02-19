@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Calculette</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="theme-selector">
+        <select id="themeSelect">
+            <option value="cyberpunk">Cyberpunk</option>
+            <option value="steampunk">Steampunk</option>
+            <option value="post-apocalyptic">Post-Apocalyptic</option>
+            <option value="retro-futuristic">Retro-Futuristic</option>
+            <option value="fantasy">Fantasy</option>
+        </select>
+    </div>
+    <div class="calculator-container">
+        <div class="calculator">
+            <div class="display">
+                <div class="previous-operand"></div>
+                <div class="current-operand">0</div>
+            </div>
+            <div class="buttons">
+                <button class="operator" data-clear>AC</button>
+                <button class="operator" data-delete>DEL</button>
+                <button class="operator" data-operation>%</button>
+                <button class="operator" data-operation>÷</button>
+                <button data-number>7</button>
+                <button data-number>8</button>
+                <button data-number>9</button>
+                <button class="operator" data-operation>×</button>
+                <button data-number>4</button>
+                <button data-number>5</button>
+                <button data-number>6</button>
+                <button class="operator" data-operation>-</button>
+                <button data-number>1</button>
+                <button data-number>2</button>
+                <button data-number>3</button>
+                <button class="operator" data-operation>+</button>
+                <button data-number>0</button>
+                <button data-number>.</button>
+                <button class="operator span-2" data-equals>=</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 

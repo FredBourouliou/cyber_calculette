@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+
+:root {
+    /* Cyberpunk Theme */
+    --cyberpunk-primary: #00f3ff;
+    --cyberpunk-secondary: #ff00ff;
+    --cyberpunk-bg: #0a0a0f;
+    --cyberpunk-button: #1a1a2e;
+    --cyberpunk-display: #000814;
+    
+    /* Steampunk Theme */
+    --steampunk-primary: #ffd700;
+    --steampunk-secondary: #8b4513;
+    --steampunk-bg: #2c1810;
+    --steampunk-button: #654321;
+    --steampunk-display: #1c1006;
+
+    /* Post-Apocalyptic Theme */
+    --apocalyptic-primary: #4dff4d;
+    --apocalyptic-secondary: #ff4d4d;
+    --apocalyptic-bg: #1a1a1a;
+    --apocalyptic-button: #333333;
+    --apocalyptic-display: #0a0a0a;
+
+    /* Retro-Futuristic Theme */
+    --retro-primary: #39ff14;
+    --retro-secondary: #ff0000;
+    --retro-bg: #000000;
+    --retro-button: #222222;
+    --retro-display: #111111;
+
+    /* Fantasy Theme */
+    --fantasy-primary: #ffd700;
+    --fantasy-secondary: #9932cc;
+    --fantasy-bg: #1a0f30;
+    --fantasy-button: #2a1f40;
+    --fantasy-display: #0f0820;
+}
+
+/* Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Theme Selector Styles */
+.theme-selector {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.theme-selector select {
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Cyberpunk Theme */
+body.cyberpunk {
+    --primary: var(--cyberpunk-primary);
+    --secondary: var(--cyberpunk-secondary);
+    --bg: var(--cyberpunk-bg);
+    --button-bg: var(--cyberpunk-button);
+    --display-bg: var(--cyberpunk-display);
+    font-family: 'Share Tech Mono', monospace;
+    background: linear-gradient(45deg, var(--cyberpunk-bg), #000);
+}
+
+body.cyberpunk .calculator-container {
+    border: 2px solid var(--cyberpunk-primary);
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+body.cyberpunk button {
+    text-shadow: 0 0 5px var(--cyberpunk-primary);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+}
+
+body.cyberpunk .display {
+    background: linear-gradient(180deg, #000814, #001428);
+    border: 1px solid var(--cyberpunk-primary);
+}
+
+/* Steampunk Theme */
+body.steampunk {
+    --primary: var(--steampunk-primary);
+    --secondary: var(--steampunk-secondary);
+    --bg: var(--steampunk-bg);
+    --button-bg: var(--steampunk-button);
+    --display-bg: var(--steampunk-display);
+    font-family: 'Special Elite', cursive;
+    background: var(--steampunk-bg) url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMmMxODEwIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCAwWk0wIDZMNiAwWiIgc3Ryb2tlPSIjNGEzODI5IiBzdHJva2Utd2lkdGg9IjEiPjwvcGF0aD4KPC9zdmc+');
+}
+
+body.steampunk .calculator-container {
+    border: 8px solid #8b4513;
+    border-radius: 15px;
+    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+CjxyZWN0IHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0iIzY1NDMyMSI+PC9yZWN0Pgo8Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI4IiBmaWxsPSJub25lIiBzdHJva2U9IiM4YjQ1MTMiIHN0cm9rZS13aWR0aD0iMiI+PC9jaXJjbGU+Cjwvc3ZnPg==');
+    box-shadow: 
+        inset 0 0 20px rgba(139, 69, 19, 0.5),
+        5px 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+body.steampunk button {
+    background: #654321;
+    border: 2px solid #8b4513;
+    border-radius: 5px;
+    color: #ffd700;
+    font-family: 'Special Elite', cursive;
+    text-shadow: 1px 1px 1px #000;
+    box-shadow: 
+        inset 0 0 10px rgba(139, 69, 19, 0.5),
+        2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+body.steampunk .display {
+    background: #1c1006;
+    border: 4px solid #8b4513;
+    box-shadow: inset 0 0 10px rgba(139, 69, 19, 0.5);
+}
+
+/* Post-Apocalyptic Theme */
+body.post-apocalyptic {
+    --primary: var(--apocalyptic-primary);
+    --secondary: var(--apocalyptic-secondary);
+    --bg: var(--apocalyptic-bg);
+    --button-bg: var(--apocalyptic-button);
+    --display-bg: var(--apocalyptic-display);
+    font-family: 'Special Elite', cursive;
+    background: #1a1a1a url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMWExYTFhIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDRMNCAweiBNNCAyTDIgMHogTTAgMkwyIDB6IiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iMC41Ij48L3BhdGg+Cjwvc3ZnPg==');
+}
+
+body.post-apocalyptic .calculator-container {
+    border: 3px solid #4d4d4d;
+    background: rgba(51, 51, 51, 0.9);
+    box-shadow: 
+        inset 0 0 20px rgba(77, 255, 77, 0.2),
+        5px 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+body.post-apocalyptic button {
+    background: #333;
+    border: 2px solid #4d4d4d;
+    color: #4dff4d;
+    font-family: 'Special Elite', cursive;
+    text-shadow: 0 0 5px #4dff4d;
+}
+
+body.post-apocalyptic .display {
+    background: #0a0a0a;
+    border: 2px solid #4d4d4d;
+    box-shadow: inset 0 0 10px rgba(77, 255, 77, 0.2);
+    font-family: 'Special Elite', cursive;
+}
+
+/* Retro-Futuristic Theme */
+body.retro-futuristic {
+    --primary: var(--retro-primary);
+    --secondary: var(--retro-secondary);
+    --bg: var(--retro-bg);
+    --button-bg: var(--retro-button);
+    --display-bg: var(--retro-display);
+    font-family: 'Press Start 2P', cursive;
+    background: #000;
+}
+
+body.retro-futuristic .calculator-container {
+    border: 4px solid #39ff14;
+    background: #000;
+    box-shadow: 
+        0 0 20px rgba(57, 255, 20, 0.5),
+        inset 0 0 10px rgba(57, 255, 20, 0.2);
+}
+
+body.retro-futuristic button {
+    background: #111;
+    border: 2px solid #39ff14;
+    color: #39ff14;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.8rem;
+    text-shadow: 0 0 5px #39ff14;
+}
+
+body.retro-futuristic .display {
+    background: #000;
+    border: 2px solid #39ff14;
+    font-family: 'Press Start 2P', cursive;
+    box-shadow: inset 0 0 10px rgba(57, 255, 20, 0.2);
+}
+
+/* Fantasy Theme */
+body.fantasy {
+    --primary: var(--fantasy-primary);
+    --secondary: var(--fantasy-secondary);
+    --bg: var(--fantasy-bg);
+    --button-bg: var(--fantasy-button);
+    --display-bg: var(--fantasy-display);
+    font-family: 'MedievalSharp', cursive;
+    background: radial-gradient(circle at center, #2a1f40, #1a0f30);
+}
+
+body.fantasy .calculator-container {
+    border: 4px solid #9932cc;
+    background: rgba(42, 31, 64, 0.9);
+    box-shadow: 
+        0 0 30px rgba(153, 50, 204, 0.3),
+        inset 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+body.fantasy button {
+    background: rgba(42, 31, 64, 0.9);
+    border: 2px solid #9932cc;
+    color: #ffd700;
+    font-family: 'MedievalSharp', cursive;
+    text-shadow: 0 0 5px #ffd700;
+}
+
+body.fantasy .display {
+    background: rgba(15, 8, 32, 0.9);
+    border: 2px solid #9932cc;
+    box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+/* Common Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.calculator-container {
+    padding: 20px;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.calculator {
+    width: 320px;
+}
+
+.display {
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: right;
+    transition: all 0.3s ease;
+}
+
+.previous-operand {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.2rem;
+    min-height: 24px;
+}
+
+.current-operand {
+    color: var(--primary);
+    font-size: 2.5rem;
+    text-shadow: 0 0 5px var(--primary);
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    padding: 15px;
+    font-size: 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: rgba(var(--primary), 0.2);
+    transform: scale(1.05);
+}
+
+.operator {
+    color: var(--secondary);
+    font-weight: bold;
+}
+
+.span-2 {
+    grid-column: span 2;
+} 
