@@ -2,6 +2,11 @@
 
 A stylish themed calculator built with HTML, CSS, and JavaScript, featuring multiple immersive visual themes. Each theme provides a unique and engaging calculator experience with custom animations, fonts, and visual effects.
 
+## Author
+
+**Frederic Bourouliou**
+- GitHub: [@FredBourouliou](https://github.com/FredBourouliou)
+
 
 ## Features
 
