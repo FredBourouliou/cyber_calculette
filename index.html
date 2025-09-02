@@ -3,48 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cyber Calculette</title>
+    <title>Cyber Calculator Pro - Advanced Calculator</title>
+    <meta name="description" content="Professional multi-theme calculator with advanced features and stunning visual effects">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@300;500;700&family=Cinzel:wght@400;600;900&family=UnifrakturMaguntia&family=Special+Elite&family=VT323&family=Press+Start+2P&family=Creepster&family=Bungee&family=Audiowide&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="theme-selector">
-        <select id="themeSelect">
-            <option value="cyberpunk">Cyberpunk</option>
-            <option value="steampunk">Steampunk</option>
-            <option value="post-apocalyptic">Post-Apocalyptic</option>
-            <option value="retro-futuristic">Retro-Futuristic</option>
-            <option value="fantasy">Fantasy</option>
-        </select>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="logo-icon">⟨⟩</span>
+                <h1 class="logo-text">Cyber Calculator <span class="pro-badge">PRO</span></h1>
+            </div>
+            <div class="controls">
+                <div class="theme-control">
+                    <label for="themeSelect" class="control-label">Theme</label>
+                    <select id="themeSelect" class="theme-select">
+                        <option value="cyberpunk">Cyberpunk 2077</option>
+                        <option value="steampunk">Steampunk Victorian</option>
+                        <option value="post-apocalyptic">Post-Apocalyptic</option>
+                        <option value="retro-futuristic">Retro-Futuristic</option>
+                        <option value="fantasy">Fantasy Realm</option>
+                        <option value="matrix">Matrix Code</option>
+                        <option value="neon">Neon Nights</option>
+                    </select>
+                </div>
+                <button class="mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+                    <span class="mode-icon">🌙</span>
+                </button>
+                <button class="sound-toggle" id="soundToggle" title="Toggle Sound">
+                    <span class="sound-icon">🔊</span>
+                </button>
+                <button class="history-toggle" id="historyToggle" title="Toggle History">
+                    <span class="history-icon">📜</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <aside class="history-panel" id="historyPanel">
+                <h2 class="history-title">Calculation History</h2>
+                <div class="history-list" id="historyList"></div>
+                <button class="clear-history" id="clearHistory">Clear History</button>
+            </aside>
+
+            <div class="calculator-wrapper">
+                <div class="calculator" id="calculator">
+                    <div class="display-wrapper">
+                        <div class="display">
+                            <div class="display-top">
+                                <span class="memory-indicator" id="memoryIndicator">M</span>
+                                <div class="previous-operand"></div>
+                            </div>
+                            <div class="current-operand">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="calculator-modes">
+                        <button class="mode-btn active" data-mode="basic">Basic</button>
+                        <button class="mode-btn" data-mode="scientific">Scientific</button>
+                        <button class="mode-btn" data-mode="programmer">Programmer</button>
+                    </div>
+
+                    <div class="buttons-container">
+                        <div class="buttons basic-buttons active" id="basicButtons">
+                            <button class="btn-special" data-memory-clear>MC</button>
+                            <button class="btn-special" data-memory-recall>MR</button>
+                            <button class="btn-special" data-memory-add>M+</button>
+                            <button class="btn-special" data-memory-subtract>M-</button>
+                            
+                            <button class="btn-function" data-clear>AC</button>
+                            <button class="btn-function" data-delete>⌫</button>
+                            <button class="btn-function" data-operation>%</button>
+                            <button class="btn-operator" data-operation>÷</button>
+                            
+                            <button class="btn-number" data-number>7</button>
+                            <button class="btn-number" data-number>8</button>
+                            <button class="btn-number" data-number>9</button>
+                            <button class="btn-operator" data-operation>×</button>
+                            
+                            <button class="btn-number" data-number>4</button>
+                            <button class="btn-number" data-number>5</button>
+                            <button class="btn-number" data-number>6</button>
+                            <button class="btn-operator" data-operation>-</button>
+                            
+                            <button class="btn-number" data-number>1</button>
+                            <button class="btn-number" data-number>2</button>
+                            <button class="btn-number" data-number>3</button>
+                            <button class="btn-operator" data-operation>+</button>
+                            
+                            <button class="btn-number btn-zero" data-number>0</button>
+                            <button class="btn-number" data-number>.</button>
+                            <button class="btn-equals" data-equals>=</button>
+                        </div>
+
+                        <div class="buttons scientific-buttons" id="scientificButtons">
+                            <button class="btn-scientific" data-function="sin">sin</button>
+                            <button class="btn-scientific" data-function="cos">cos</button>
+                            <button class="btn-scientific" data-function="tan">tan</button>
+                            <button class="btn-scientific" data-function="log">log</button>
+                            
+                            <button class="btn-scientific" data-function="ln">ln</button>
+                            <button class="btn-scientific" data-function="sqrt">√</button>
+                            <button class="btn-scientific" data-function="pow">x²</button>
+                            <button class="btn-scientific" data-function="pow3">x³</button>
+                            
+                            <button class="btn-scientific" data-function="exp">eˣ</button>
+                            <button class="btn-scientific" data-function="pi">π</button>
+                            <button class="btn-scientific" data-function="e">e</button>
+                            <button class="btn-scientific" data-function="factorial">n!</button>
+                            
+                            <button class="btn-scientific" data-function="abs">|x|</button>
+                            <button class="btn-scientific" data-function="round">⟲</button>
+                            <button class="btn-scientific" data-function="ceil">⌈x⌉</button>
+                            <button class="btn-scientific" data-function="floor">⌊x⌋</button>
+                        </div>
+
+                        <div class="buttons programmer-buttons" id="programmerButtons">
+                            <button class="btn-prog" data-base="hex">HEX</button>
+                            <button class="btn-prog" data-base="dec">DEC</button>
+                            <button class="btn-prog" data-base="oct">OCT</button>
+                            <button class="btn-prog" data-base="bin">BIN</button>
+                            
+                            <button class="btn-prog" data-bitwise="and">AND</button>
+                            <button class="btn-prog" data-bitwise="or">OR</button>
+                            <button class="btn-prog" data-bitwise="xor">XOR</button>
+                            <button class="btn-prog" data-bitwise="not">NOT</button>
+                            
+                            <button class="btn-prog" data-shift="left"><<</button>
+                            <button class="btn-prog" data-shift="right">>></button>
+                            <button class="btn-prog" data-prog-number>A</button>
+                            <button class="btn-prog" data-prog-number>B</button>
+                            
+                            <button class="btn-prog" data-prog-number>C</button>
+                            <button class="btn-prog" data-prog-number>D</button>
+                            <button class="btn-prog" data-prog-number>E</button>
+                            <button class="btn-prog" data-prog-number>F</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="calculator-info">
+                    <div class="info-card">
+                        <h3>Keyboard Shortcuts</h3>
+                        <ul class="shortcuts-list">
+                            <li><kbd>0-9</kbd> Numbers</li>
+                            <li><kbd>+ - * /</kbd> Operations</li>
+                            <li><kbd>Enter</kbd> Calculate</li>
+                            <li><kbd>Esc</kbd> Clear</li>
+                            <li><kbd>Backspace</kbd> Delete</li>
+                            <li><kbd>H</kbd> History</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <p>&copy; 2024 Cyber Calculator Pro | Created by Frederic Bourouliou</p>
+            <div class="footer-links">
+                <a href="https://github.com/FredBourouliou" target="_blank" rel="noopener">GitHub</a>
+            </div>
+        </footer>
     </div>
-    <div class="calculator-container">
-        <div class="calculator">
-            <div class="display">
-                <div class="previous-operand"></div>
-                <div class="current-operand">0</div>
-            </div>
-            <div class="buttons">
-                <button class="operator" data-clear>AC</button>
-                <button class="operator" data-delete>DEL</button>
-                <button class="operator" data-operation>%</button>
-                <button class="operator" data-operation>÷</button>
-                <button data-number>7</button>
-                <button data-number>8</button>
-                <button data-number>9</button>
-                <button class="operator" data-operation>×</button>
-                <button data-number>4</button>
-                <button data-number>5</button>
-                <button data-number>6</button>
-                <button class="operator" data-operation>-</button>
-                <button data-number>1</button>
-                <button data-number>2</button>
-                <button data-number>3</button>
-                <button class="operator" data-operation>+</button>
-                <button data-number>0</button>
-                <button data-number>.</button>
-                <button class="operator span-2" data-equals>=</button>
-            </div>
+
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <p class="loader-text">Initializing Cyber Calculator...</p>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html> 

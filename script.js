@@ -1,21 +1,194 @@
-class Calculator {
-    constructor(previousOperandElement, currentOperandElement) {
-        this.previousOperandElement = previousOperandElement;
-        this.currentOperandElement = currentOperandElement;
-        this.clear();
-        this.shouldResetScreen = false;
-    }
-
-    clear() {
+class AdvancedCalculator {
+    constructor() {
         this.currentOperand = '0';
         this.previousOperand = '';
         this.operation = undefined;
+        this.shouldResetScreen = false;
+        this.memory = 0;
+        this.history = [];
+        this.currentMode = 'basic';
+        this.soundEnabled = true;
+        this.currentTheme = 'cyberpunk';
+        this.darkMode = false;
+        this.currentBase = 10;
+        
+        this.initializeElements();
+        this.attachEventListeners();
+        this.loadPreferences();
+        this.initializeAudio();
+        this.showLoadingScreen();
     }
 
-    delete() {
-        if (this.currentOperand === '0') return;
-        this.currentOperand = this.currentOperand.toString().slice(0, -1);
-        if (this.currentOperand === '') this.currentOperand = '0';
+    initializeElements() {
+        this.previousOperandElement = document.querySelector('.previous-operand');
+        this.currentOperandElement = document.querySelector('.current-operand');
+        this.historyList = document.getElementById('historyList');
+        this.historyPanel = document.getElementById('historyPanel');
+        this.memoryIndicator = document.getElementById('memoryIndicator');
+        this.loadingScreen = document.getElementById('loadingScreen');
+        
+        this.basicButtons = document.getElementById('basicButtons');
+        this.scientificButtons = document.getElementById('scientificButtons');
+        this.programmerButtons = document.getElementById('programmerButtons');
+    }
+
+    attachEventListeners() {
+        document.querySelectorAll('[data-number]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.appendNumber(button.innerText);
+                this.playSound('click');
+            });
+        });
+
+        document.querySelectorAll('[data-operation]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.chooseOperation(button.innerText);
+                this.playSound('operation');
+            });
+        });
+
+        const equalsButton = document.querySelector('[data-equals]');
+        if (equalsButton) {
+            equalsButton.addEventListener('click', () => {
+                this.compute();
+                this.playSound('equals');
+            });
+        }
+
+        const clearButton = document.querySelector('[data-clear]');
+        if (clearButton) {
+            clearButton.addEventListener('click', () => {
+                this.clear();
+                this.playSound('clear');
+            });
+        }
+
+        const deleteButton = document.querySelector('[data-delete]');
+        if (deleteButton) {
+            deleteButton.addEventListener('click', () => {
+                this.delete();
+                this.playSound('delete');
+            });
+        }
+
+        document.querySelectorAll('[data-memory-clear]').forEach(button => {
+            button.addEventListener('click', () => this.memoryClear());
+        });
+
+        document.querySelectorAll('[data-memory-recall]').forEach(button => {
+            button.addEventListener('click', () => this.memoryRecall());
+        });
+
+        document.querySelectorAll('[data-memory-add]').forEach(button => {
+            button.addEventListener('click', () => this.memoryAdd());
+        });
+
+        document.querySelectorAll('[data-memory-subtract]').forEach(button => {
+            button.addEventListener('click', () => this.memorySubtract());
+        });
+
+        document.querySelectorAll('.mode-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                this.switchMode(button.dataset.mode);
+                this.playSound('mode');
+            });
+        });
+
+        document.querySelectorAll('[data-function]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.scientificFunction(button.dataset.function);
+                this.playSound('scientific');
+            });
+        });
+
+        document.querySelectorAll('[data-base]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.changeBase(button.dataset.base);
+                this.playSound('base');
+            });
+        });
+
+        document.querySelectorAll('[data-bitwise]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.bitwiseOperation(button.dataset.bitwise);
+                this.playSound('bitwise');
+            });
+        });
+
+        document.querySelectorAll('[data-prog-number]').forEach(button => {
+            button.addEventListener('click', () => {
+                if (this.currentBase === 16) {
+                    this.appendNumber(button.innerText);
+                    this.playSound('click');
+                }
+            });
+        });
+
+        const themeSelect = document.getElementById('themeSelect');
+        if (themeSelect) {
+            themeSelect.addEventListener('change', (e) => {
+                this.changeTheme(e.target.value);
+            });
+        }
+
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            darkModeToggle.addEventListener('click', () => {
+                this.toggleDarkMode();
+            });
+        }
+
+        const soundToggle = document.getElementById('soundToggle');
+        if (soundToggle) {
+            soundToggle.addEventListener('click', () => {
+                this.toggleSound();
+            });
+        }
+
+        const historyToggle = document.getElementById('historyToggle');
+        if (historyToggle) {
+            historyToggle.addEventListener('click', () => {
+                this.toggleHistory();
+            });
+        }
+
+        const clearHistory = document.getElementById('clearHistory');
+        if (clearHistory) {
+            clearHistory.addEventListener('click', () => {
+                this.clearHistory();
+            });
+        }
+
+        document.addEventListener('keydown', (e) => this.handleKeyboardInput(e));
+    }
+
+    handleKeyboardInput(e) {
+        if (e.key >= '0' && e.key <= '9') {
+            this.appendNumber(e.key);
+            this.playSound('click');
+        } else if (e.key === '.') {
+            this.appendNumber('.');
+            this.playSound('click');
+        } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+            const operation = e.key === '*' ? '×' : e.key === '/' ? '÷' : e.key;
+            this.chooseOperation(operation);
+            this.playSound('operation');
+        } else if (e.key === '%') {
+            this.chooseOperation('%');
+            this.playSound('operation');
+        } else if (e.key === 'Enter' || e.key === '=') {
+            e.preventDefault();
+            this.compute();
+            this.playSound('equals');
+        } else if (e.key === 'Escape') {
+            this.clear();
+            this.playSound('clear');
+        } else if (e.key === 'Backspace') {
+            this.delete();
+            this.playSound('delete');
+        } else if (e.key === 'h' || e.key === 'H') {
+            this.toggleHistory();
+        }
     }
 
     appendNumber(number) {
@@ -29,6 +202,7 @@ class Calculator {
         } else {
             this.currentOperand = this.currentOperand.toString() + number.toString();
         }
+        this.updateDisplay();
     }
 
     chooseOperation(operation) {
@@ -39,6 +213,7 @@ class Calculator {
         this.operation = operation;
         this.previousOperand = this.currentOperand;
         this.currentOperand = '0';
+        this.updateDisplay();
     }
 
     compute() {
@@ -59,137 +234,493 @@ class Calculator {
                 break;
             case '÷':
                 if (current === 0) {
-                    this.currentOperand = 'Error';
+                    this.currentOperand = 'Erreur';
                     this.previousOperand = '';
                     this.operation = undefined;
+                    this.updateDisplay();
                     return;
                 }
                 computation = prev / current;
                 break;
             case '%':
-                computation = (prev * current) / 100;
+                computation = prev % current;
                 break;
             default:
                 return;
         }
 
-        this.currentOperand = computation.toString();
+        const historyEntry = `${this.getFormattedNumber(prev)} ${this.operation} ${this.getFormattedNumber(current)} = ${this.getFormattedNumber(computation)}`;
+        this.addToHistory(historyEntry);
+
+        this.currentOperand = computation;
         this.operation = undefined;
         this.previousOperand = '';
         this.shouldResetScreen = true;
+        this.updateDisplay();
     }
 
-    getDisplayNumber(number) {
-        if (number === 'Error') return number;
-        const stringNumber = number.toString();
-        const integerDigits = parseFloat(stringNumber.split('.')[0]);
-        const decimalDigits = stringNumber.split('.')[1];
-        let integerDisplay;
-        
-        if (isNaN(integerDigits)) {
-            integerDisplay = '0';
-        } else {
-            integerDisplay = integerDigits.toLocaleString('fr-FR', {
-                maximumFractionDigits: 0
-            });
+    clear() {
+        this.currentOperand = '0';
+        this.previousOperand = '';
+        this.operation = undefined;
+        this.updateDisplay();
+    }
+
+    delete() {
+        if (this.currentOperand === '0') return;
+        this.currentOperand = this.currentOperand.toString().slice(0, -1);
+        if (this.currentOperand === '') this.currentOperand = '0';
+        this.updateDisplay();
+    }
+
+    memoryClear() {
+        this.memory = 0;
+        this.memoryIndicator.classList.remove('active');
+        this.playSound('memory');
+    }
+
+    memoryRecall() {
+        this.currentOperand = this.memory.toString();
+        this.updateDisplay();
+        this.playSound('memory');
+    }
+
+    memoryAdd() {
+        this.memory += parseFloat(this.currentOperand) || 0;
+        this.memoryIndicator.classList.add('active');
+        this.playSound('memory');
+    }
+
+    memorySubtract() {
+        this.memory -= parseFloat(this.currentOperand) || 0;
+        this.memoryIndicator.classList.add('active');
+        this.playSound('memory');
+    }
+
+    scientificFunction(func) {
+        const current = parseFloat(this.currentOperand);
+        let result;
+
+        switch (func) {
+            case 'sin':
+                result = Math.sin(current * Math.PI / 180);
+                break;
+            case 'cos':
+                result = Math.cos(current * Math.PI / 180);
+                break;
+            case 'tan':
+                result = Math.tan(current * Math.PI / 180);
+                break;
+            case 'log':
+                result = Math.log10(current);
+                break;
+            case 'ln':
+                result = Math.log(current);
+                break;
+            case 'sqrt':
+                result = Math.sqrt(current);
+                break;
+            case 'pow':
+                result = Math.pow(current, 2);
+                break;
+            case 'pow3':
+                result = Math.pow(current, 3);
+                break;
+            case 'exp':
+                result = Math.exp(current);
+                break;
+            case 'pi':
+                result = Math.PI;
+                break;
+            case 'e':
+                result = Math.E;
+                break;
+            case 'factorial':
+                result = this.factorial(Math.floor(current));
+                break;
+            case 'abs':
+                result = Math.abs(current);
+                break;
+            case 'round':
+                result = Math.round(current);
+                break;
+            case 'ceil':
+                result = Math.ceil(current);
+                break;
+            case 'floor':
+                result = Math.floor(current);
+                break;
         }
 
-        if (decimalDigits != null) {
-            return `${integerDisplay}.${decimalDigits}`;
-        } else {
-            return integerDisplay;
+        if (result !== undefined) {
+            const historyEntry = `${func}(${this.getFormattedNumber(current)}) = ${this.getFormattedNumber(result)}`;
+            this.addToHistory(historyEntry);
+            this.currentOperand = result.toString();
+            this.shouldResetScreen = true;
+            this.updateDisplay();
         }
+    }
+
+    factorial(n) {
+        if (n < 0) return NaN;
+        if (n === 0 || n === 1) return 1;
+        let result = 1;
+        for (let i = 2; i <= n; i++) {
+            result *= i;
+        }
+        return result;
+    }
+
+    changeBase(base) {
+        const current = parseInt(this.currentOperand, this.currentBase);
+        
+        switch (base) {
+            case 'hex':
+                this.currentBase = 16;
+                this.currentOperand = current.toString(16).toUpperCase();
+                break;
+            case 'dec':
+                this.currentBase = 10;
+                this.currentOperand = current.toString(10);
+                break;
+            case 'oct':
+                this.currentBase = 8;
+                this.currentOperand = current.toString(8);
+                break;
+            case 'bin':
+                this.currentBase = 2;
+                this.currentOperand = current.toString(2);
+                break;
+        }
+        
+        this.updateDisplay();
+        this.updateBaseButtons(base);
+    }
+
+    updateBaseButtons(activeBase) {
+        document.querySelectorAll('[data-base]').forEach(button => {
+            button.classList.remove('active');
+            if (button.dataset.base === activeBase) {
+                button.classList.add('active');
+            }
+        });
+    }
+
+    bitwiseOperation(operation) {
+        const current = parseInt(this.currentOperand, this.currentBase);
+        let result;
+
+        if (this.previousOperand !== '') {
+            const prev = parseInt(this.previousOperand, this.currentBase);
+            
+            switch (operation) {
+                case 'and':
+                    result = prev & current;
+                    break;
+                case 'or':
+                    result = prev | current;
+                    break;
+                case 'xor':
+                    result = prev ^ current;
+                    break;
+            }
+            
+            if (result !== undefined) {
+                this.currentOperand = result.toString(this.currentBase);
+                this.previousOperand = '';
+                this.operation = undefined;
+            }
+        } else if (operation === 'not') {
+            result = ~current;
+            this.currentOperand = result.toString(this.currentBase);
+        }
+        
+        this.shouldResetScreen = true;
+        this.updateDisplay();
+    }
+
+    switchMode(mode) {
+        this.currentMode = mode;
+        
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+        
+        document.querySelectorAll('.buttons').forEach(buttons => {
+            buttons.classList.remove('active');
+        });
+        
+        switch (mode) {
+            case 'basic':
+                this.basicButtons.classList.add('active');
+                break;
+            case 'scientific':
+                this.scientificButtons.classList.add('active');
+                break;
+            case 'programmer':
+                this.programmerButtons.classList.add('active');
+                break;
+        }
+    }
+
+    changeTheme(theme) {
+        const bodyClasses = document.body.className.split(' ');
+        const darkModeClass = bodyClasses.find(c => c === 'dark-mode');
+        const soundEnabledClass = bodyClasses.find(c => c === 'sound-enabled');
+        
+        document.body.className = '';
+        
+        if (theme !== 'cyberpunk') {
+            document.body.classList.add(`theme-${theme}`);
+        }
+        
+        if (darkModeClass) {
+            document.body.classList.add(darkModeClass);
+        }
+        
+        if (soundEnabledClass) {
+            document.body.classList.add(soundEnabledClass);
+        }
+        
+        this.currentTheme = theme;
+        this.savePreferences();
+        this.animateThemeChange();
+    }
+
+    animateThemeChange() {
+        const calculator = document.querySelector('.calculator');
+        if (calculator) {
+            calculator.style.transform = 'scale(0.95)';
+            calculator.style.opacity = '0.8';
+            
+            setTimeout(() => {
+                calculator.style.transform = 'scale(1)';
+                calculator.style.opacity = '1';
+            }, 300);
+        }
+    }
+
+    toggleDarkMode() {
+        this.darkMode = !this.darkMode;
+        document.body.classList.toggle('dark-mode');
+        const icon = document.querySelector('.mode-icon');
+        icon.textContent = this.darkMode ? '☀️' : '🌙';
+        this.savePreferences();
+    }
+
+    toggleSound() {
+        this.soundEnabled = !this.soundEnabled;
+        const icon = document.querySelector('.sound-icon');
+        icon.textContent = this.soundEnabled ? '🔊' : '🔇';
+        document.body.classList.toggle('sound-enabled', this.soundEnabled);
+        this.savePreferences();
+    }
+
+    toggleHistory() {
+        this.historyPanel.classList.toggle('active');
+    }
+
+    addToHistory(entry) {
+        const timestamp = new Date().toLocaleTimeString('fr-FR');
+        this.history.unshift({ entry, timestamp });
+        if (this.history.length > 50) {
+            this.history.pop();
+        }
+        this.updateHistoryDisplay();
+        this.saveHistory();
+    }
+
+    updateHistoryDisplay() {
+        this.historyList.innerHTML = '';
+        this.history.forEach(item => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${item.timestamp}</div>
+                <div>${item.entry}</div>
+            `;
+            historyItem.addEventListener('click', () => {
+                const result = item.entry.split(' = ')[1];
+                if (result) {
+                    this.currentOperand = result.replace(/\s/g, '');
+                    this.updateDisplay();
+                }
+            });
+            this.historyList.appendChild(historyItem);
+        });
+    }
+
+    clearHistory() {
+        this.history = [];
+        this.updateHistoryDisplay();
+        localStorage.removeItem('calculatorHistory');
+    }
+
+    getFormattedNumber(number) {
+        if (number === '' || number === null || number === undefined) return '';
+        if (typeof number === 'string' && isNaN(parseFloat(number))) return number;
+        if (isNaN(number)) return '';
+        if (this.currentMode === 'programmer' && this.currentBase !== 10) {
+            return Math.floor(number).toString(this.currentBase).toUpperCase();
+        }
+        return new Intl.NumberFormat('fr-FR', {
+            maximumFractionDigits: 10
+        }).format(number);
     }
 
     updateDisplay() {
-        this.currentOperandElement.innerText = this.getDisplayNumber(this.currentOperand);
+        this.currentOperandElement.innerText = this.getFormattedNumber(this.currentOperand) || this.currentOperand;
         if (this.operation != null) {
-            this.previousOperandElement.innerText = 
-                `${this.getDisplayNumber(this.previousOperand)} ${this.operation}`;
+            this.previousOperandElement.innerText = `${this.getFormattedNumber(this.previousOperand)} ${this.operation}`;
         } else {
             this.previousOperandElement.innerText = '';
         }
     }
+
+    initializeAudio() {
+        this.audioContext = null;
+        this.sounds = {
+            click: { frequency: 800, duration: 50 },
+            operation: { frequency: 600, duration: 80 },
+            equals: { frequency: 1000, duration: 100 },
+            clear: { frequency: 400, duration: 150 },
+            delete: { frequency: 500, duration: 60 },
+            memory: { frequency: 900, duration: 70 },
+            mode: { frequency: 700, duration: 90 },
+            scientific: { frequency: 1200, duration: 60 },
+            base: { frequency: 550, duration: 70 },
+            bitwise: { frequency: 650, duration: 80 }
+        };
+    }
+
+    playSound(type) {
+        if (!this.soundEnabled) return;
+        
+        try {
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            const sound = this.sounds[type];
+            if (!sound) return;
+
+            const oscillator = this.audioContext.createOscillator();
+            const gainNode = this.audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(this.audioContext.destination);
+
+            oscillator.frequency.value = sound.frequency;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + sound.duration / 1000);
+
+            oscillator.start(this.audioContext.currentTime);
+            oscillator.stop(this.audioContext.currentTime + sound.duration / 1000);
+        } catch (e) {
+            console.warn('Audio playback failed:', e);
+        }
+    }
+
+    savePreferences() {
+        const preferences = {
+            theme: this.currentTheme,
+            darkMode: this.darkMode,
+            soundEnabled: this.soundEnabled,
+            currentMode: this.currentMode
+        };
+        localStorage.setItem('calculatorPreferences', JSON.stringify(preferences));
+    }
+
+    loadPreferences() {
+        try {
+            const saved = localStorage.getItem('calculatorPreferences');
+            if (saved) {
+                const preferences = JSON.parse(saved);
+                
+                if (preferences.theme) {
+                    this.changeTheme(preferences.theme);
+                    const themeSelect = document.getElementById('themeSelect');
+                    if (themeSelect) {
+                        themeSelect.value = preferences.theme;
+                    }
+                }
+                
+                if (preferences.darkMode) {
+                    this.toggleDarkMode();
+                }
+                
+                if (preferences.soundEnabled === false) {
+                    this.toggleSound();
+                }
+                
+                if (preferences.currentMode) {
+                    this.switchMode(preferences.currentMode);
+                }
+            }
+        } catch (e) {
+            console.error('Error loading preferences:', e);
+        }
+        
+        this.loadHistory();
+    }
+
+    saveHistory() {
+        localStorage.setItem('calculatorHistory', JSON.stringify(this.history));
+    }
+
+    loadHistory() {
+        try {
+            const saved = localStorage.getItem('calculatorHistory');
+            if (saved) {
+                this.history = JSON.parse(saved);
+                this.updateHistoryDisplay();
+            }
+        } catch (e) {
+            console.error('Error loading history:', e);
+            this.history = [];
+        }
+    }
+
+    showLoadingScreen() {
+        this.loadingScreen.classList.add('active');
+        
+        setTimeout(() => {
+            this.loadingScreen.classList.remove('active');
+            this.animateCalculatorEntrance();
+        }, 1500);
+    }
+
+    animateCalculatorEntrance() {
+        const elements = [
+            '.app-header',
+            '.calculator',
+            '.calculator-info',
+            '.app-footer'
+        ];
+        
+        elements.forEach((selector, index) => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    element.style.transition = 'all 0.5s ease';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            }
+        });
+    }
 }
 
-// Sélection des éléments
-const numberButtons = document.querySelectorAll('[data-number]');
-const operationButtons = document.querySelectorAll('[data-operation]');
-const equalsButton = document.querySelector('[data-equals]');
-const deleteButton = document.querySelector('[data-delete]');
-const clearButton = document.querySelector('[data-clear]');
-const previousOperandElement = document.querySelector('.previous-operand');
-const currentOperandElement = document.querySelector('.current-operand');
-
-// Création de l'instance de la calculatrice
-const calculator = new Calculator(previousOperandElement, currentOperandElement);
-
-// Ajout des événements
-numberButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        calculator.appendNumber(button.innerText);
-        calculator.updateDisplay();
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    const calculator = new AdvancedCalculator();
 });
 
-operationButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        calculator.chooseOperation(button.innerText);
-        calculator.updateDisplay();
-    });
-});
-
-equalsButton.addEventListener('click', () => {
-    calculator.compute();
-    calculator.updateDisplay();
-});
-
-clearButton.addEventListener('click', () => {
-    calculator.clear();
-    calculator.updateDisplay();
-});
-
-deleteButton.addEventListener('click', () => {
-    calculator.delete();
-    calculator.updateDisplay();
-});
-
-// Ajout des événements clavier
-document.addEventListener('keydown', (e) => {
-    if (e.key >= '0' && e.key <= '9' || e.key === '.') {
-        calculator.appendNumber(e.key);
-        calculator.updateDisplay();
-    }
-    if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/' || e.key === '%') {
-        let operation = e.key;
-        if (operation === '*') operation = '×';
-        if (operation === '/') operation = '÷';
-        calculator.chooseOperation(operation);
-        calculator.updateDisplay();
-    }
-    if (e.key === 'Enter' || e.key === '=') {
-        calculator.compute();
-        calculator.updateDisplay();
-    }
-    if (e.key === 'Backspace') {
-        calculator.delete();
-        calculator.updateDisplay();
-    }
-    if (e.key === 'Escape') {
-        calculator.clear();
-        calculator.updateDisplay();
-    }
-});
-
-// Theme Switcher
-const themeSelect = document.getElementById('themeSelect');
-
-// Set initial theme
-document.body.classList.add('cyberpunk');
-
-themeSelect.addEventListener('change', (e) => {
-    // Remove all theme classes
-    document.body.classList.remove('cyberpunk', 'steampunk', 'post-apocalyptic', 'retro-futuristic', 'fantasy');
-    // Add selected theme class
-    document.body.classList.add(e.target.value);
-}); 
+console.log('%c🎮 Cyber Calculator Pro Loaded!', 'color: #00d4ff; font-size: 20px; font-weight: bold; text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);');
+console.log('%cDeveloped by Frederic Bourouliou', 'color: #ff00ff; font-size: 14px;');
+console.log('%cVersion 2.0 - Professional Edition', 'color: #00ff88; font-size: 12px;');
