@@ -1,4 +1,7 @@
 class AdvancedCalculator {
+    // Upper bound for the << shift count, to keep BigInt results reasonable
+    static MAX_SHIFT = 1024n;
+
     constructor() {
         this.currentOperand = '0';
         this.previousOperand = '';
@@ -115,12 +118,18 @@ class AdvancedCalculator {
             });
         });
 
+        document.querySelectorAll('[data-shift]').forEach(button => {
+            button.addEventListener('click', () => {
+                this.chooseOperation(button.dataset.shift === 'left' ? '<<' : '>>');
+                this.playSound('bitwise');
+            });
+        });
+
         document.querySelectorAll('[data-prog-number]').forEach(button => {
             button.addEventListener('click', () => {
-                if (this.currentBase === 16) {
-                    this.appendNumber(button.innerText);
-                    this.playSound('click');
-                }
+                // appendNumber rejects digits that are invalid in the current base
+                this.appendNumber(button.textContent.trim());
+                this.playSound('click');
             });
         });
 
@@ -163,7 +172,13 @@ class AdvancedCalculator {
     }
 
     handleKeyboardInput(e) {
-        if (e.key >= '0' && e.key <= '9') {
+        if (this.isProgrammer() && /^[a-f]$/i.test(e.key)) {
+            this.appendNumber(e.key.toUpperCase());
+            this.playSound('click');
+        } else if (this.isProgrammer() && (e.key === '<' || e.key === '>')) {
+            this.chooseOperation(e.key === '<' ? '<<' : '>>');
+            this.playSound('bitwise');
+        } else if (e.key >= '0' && e.key <= '9') {
             this.appendNumber(e.key);
             this.playSound('click');
         } else if (e.key === '.') {
@@ -192,6 +207,7 @@ class AdvancedCalculator {
     }
 
     appendNumber(number) {
+        if (this.isProgrammer() && !this.isValidDigit(number)) return;
         if (this.shouldResetScreen) {
             this.currentOperand = '';
             this.shouldResetScreen = false;
@@ -206,7 +222,7 @@ class AdvancedCalculator {
     }
 
     chooseOperation(operation) {
-        if (this.currentOperand === '') return;
+        if (this.currentOperand === '' || this.currentOperand === 'Erreur') return;
         if (this.previousOperand !== '') {
             this.compute();
         }
@@ -217,6 +233,10 @@ class AdvancedCalculator {
     }
 
     compute() {
+        if (this.isProgrammer()) {
+            this.computeInteger();
+            return;
+        }
         let computation;
         const prev = parseFloat(this.previousOperand);
         const current = parseFloat(this.currentOperand);
@@ -234,10 +254,7 @@ class AdvancedCalculator {
                 break;
             case '÷':
                 if (current === 0) {
-                    this.currentOperand = 'Erreur';
-                    this.previousOperand = '';
-                    this.operation = undefined;
-                    this.updateDisplay();
+                    this.showError();
                     return;
                 }
                 computation = prev / current;
@@ -250,11 +267,92 @@ class AdvancedCalculator {
         }
 
         const historyEntry = `${this.getFormattedNumber(prev)} ${this.operation} ${this.getFormattedNumber(current)} = ${this.getFormattedNumber(computation)}`;
-        this.addToHistory(historyEntry);
+        this.addToHistory(historyEntry, String(computation));
 
         this.currentOperand = computation;
         this.operation = undefined;
         this.previousOperand = '';
+        this.shouldResetScreen = true;
+        this.updateDisplay();
+    }
+
+    // Programmer mode: operands are strings written in the current base and
+    // computed as BigInt, so results are exact integers whatever their size.
+    computeInteger() {
+        const prev = this.parseInteger(this.previousOperand);
+        const current = this.parseInteger(this.currentOperand);
+        if (prev === null || current === null || !this.operation) return;
+
+        let result;
+        switch (this.operation) {
+            case '+': result = prev + current; break;
+            case '-': result = prev - current; break;
+            case '×': result = prev * current; break;
+            case '÷':
+            case '%':
+                if (current === 0n) { this.showError(); return; }
+                // BigInt division truncates toward zero (integer division)
+                result = this.operation === '÷' ? prev / current : prev % current;
+                break;
+            case '<<':
+            case '>>':
+                if (current < 0n || current > AdvancedCalculator.MAX_SHIFT) { this.showError(); return; }
+                result = this.operation === '<<' ? prev << current : prev >> current;
+                break;
+            case 'AND': result = prev & current; break;
+            case 'OR': result = prev | current; break;
+            case 'XOR': result = prev ^ current; break;
+            default: return;
+        }
+
+        const value = this.formatInteger(result);
+        const historyEntry = `${this.getFormattedNumber(this.formatInteger(prev))} ${this.operation} ${this.getFormattedNumber(this.formatInteger(current))} = ${this.getFormattedNumber(value)}${this.baseSuffix()}`;
+        this.addToHistory(historyEntry, value);
+
+        this.currentOperand = value;
+        this.operation = undefined;
+        this.previousOperand = '';
+        this.shouldResetScreen = true;
+        this.updateDisplay();
+    }
+
+    isProgrammer() {
+        return this.currentMode === 'programmer';
+    }
+
+    isValidDigit(digit) {
+        return digit.length === 1 && '0123456789ABCDEF'.slice(0, this.currentBase).includes(digit.toUpperCase());
+    }
+
+    // Parses an integer written in `base` (optional leading minus). Returns a BigInt, or null if invalid.
+    parseInteger(text, base = this.currentBase) {
+        const match = String(text).trim().toUpperCase().match(/^(-?)([0-9A-F]+)$/);
+        if (!match) return null;
+        const allowed = '0123456789ABCDEF'.slice(0, base);
+        if ([...match[2]].some(c => !allowed.includes(c))) return null;
+        const prefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' }[base];
+        const value = BigInt(prefix + match[2]);
+        return match[1] ? -value : value;
+    }
+
+    formatInteger(value, base = this.currentBase) {
+        return value.toString(base).toUpperCase();
+    }
+
+    // Decimal string -> decimal integer string (fraction truncated), '0' if not a number.
+    toIntegerString(text) {
+        const n = parseFloat(text);
+        return Number.isFinite(n) ? BigInt(Math.trunc(n)).toString() : '0';
+    }
+
+    baseSuffix() {
+        return { 2: ' (BIN)', 8: ' (OCT)', 10: '', 16: ' (HEX)' }[this.currentBase];
+    }
+
+    showError() {
+        this.currentOperand = 'Erreur';
+        this.previousOperand = '';
+        this.operation = undefined;
         this.shouldResetScreen = true;
         this.updateDisplay();
     }
@@ -280,21 +378,31 @@ class AdvancedCalculator {
     }
 
     memoryRecall() {
-        this.currentOperand = this.memory.toString();
+        this.currentOperand = this.isProgrammer()
+            ? this.formatInteger(BigInt(Math.trunc(this.memory)))
+            : this.memory.toString();
         this.updateDisplay();
         this.playSound('memory');
     }
 
     memoryAdd() {
-        this.memory += parseFloat(this.currentOperand) || 0;
+        this.memory += this.currentValueAsNumber();
         this.memoryIndicator.classList.add('active');
         this.playSound('memory');
     }
 
     memorySubtract() {
-        this.memory -= parseFloat(this.currentOperand) || 0;
+        this.memory -= this.currentValueAsNumber();
         this.memoryIndicator.classList.add('active');
         this.playSound('memory');
+    }
+
+    currentValueAsNumber() {
+        if (this.isProgrammer()) {
+            const value = this.parseInteger(this.currentOperand);
+            return value === null ? 0 : Number(value);
+        }
+        return parseFloat(this.currentOperand) || 0;
     }
 
     scientificFunction(func) {
@@ -354,7 +462,7 @@ class AdvancedCalculator {
 
         if (result !== undefined) {
             const historyEntry = `${func}(${this.getFormattedNumber(current)}) = ${this.getFormattedNumber(result)}`;
-            this.addToHistory(historyEntry);
+            this.addToHistory(historyEntry, result.toString());
             this.currentOperand = result.toString();
             this.shouldResetScreen = true;
             this.updateDisplay();
@@ -372,29 +480,37 @@ class AdvancedCalculator {
     }
 
     changeBase(base) {
-        const current = parseInt(this.currentOperand, this.currentBase);
-        
-        switch (base) {
-            case 'hex':
-                this.currentBase = 16;
-                this.currentOperand = current.toString(16).toUpperCase();
-                break;
-            case 'dec':
-                this.currentBase = 10;
-                this.currentOperand = current.toString(10);
-                break;
-            case 'oct':
-                this.currentBase = 8;
-                this.currentOperand = current.toString(8);
-                break;
-            case 'bin':
-                this.currentBase = 2;
-                this.currentOperand = current.toString(2);
-                break;
+        const newBase = { hex: 16, dec: 10, oct: 8, bin: 2 }[base];
+        if (!newBase) return;
+        const convert = text => {
+            const value = this.parseInteger(text, this.currentBase);
+            return value === null ? null : this.formatInteger(value, newBase);
+        };
+
+        this.currentOperand = convert(this.currentOperand) ?? '0';
+        // Keep a pending operation consistent: its first operand switches base too
+        if (this.previousOperand !== '') {
+            const prev = convert(this.previousOperand);
+            if (prev === null) {
+                this.previousOperand = '';
+                this.operation = undefined;
+            } else {
+                this.previousOperand = prev;
+            }
         }
-        
+        this.currentBase = newBase;
+
+        this.updateDigitButtons();
         this.updateDisplay();
         this.updateBaseButtons(base);
+    }
+
+    // In programmer mode, disable the digit keys that are invalid in the current base.
+    updateDigitButtons() {
+        const programmer = this.isProgrammer();
+        document.querySelectorAll('[data-number], [data-prog-number]').forEach(button => {
+            button.disabled = programmer && !this.isValidDigit(button.textContent.trim());
+        });
     }
 
     updateBaseButtons(activeBase) {
@@ -407,39 +523,27 @@ class AdvancedCalculator {
     }
 
     bitwiseOperation(operation) {
-        const current = parseInt(this.currentOperand, this.currentBase);
-        let result;
-
-        if (this.previousOperand !== '') {
-            const prev = parseInt(this.previousOperand, this.currentBase);
-            
-            switch (operation) {
-                case 'and':
-                    result = prev & current;
-                    break;
-                case 'or':
-                    result = prev | current;
-                    break;
-                case 'xor':
-                    result = prev ^ current;
-                    break;
-            }
-            
-            if (result !== undefined) {
-                this.currentOperand = result.toString(this.currentBase);
-                this.previousOperand = '';
-                this.operation = undefined;
-            }
-        } else if (operation === 'not') {
-            result = ~current;
-            this.currentOperand = result.toString(this.currentBase);
+        if (operation !== 'not') {
+            // AND / OR / XOR are binary operators like + and -, resolved by =
+            this.chooseOperation(operation.toUpperCase());
+            return;
         }
-        
+        const current = this.parseInteger(this.currentOperand);
+        if (current === null) return;
+        const value = this.formatInteger(~current);
+        this.addToHistory(`NOT(${this.getFormattedNumber(this.formatInteger(current))}) = ${this.getFormattedNumber(value)}${this.baseSuffix()}`, value);
+        this.currentOperand = value;
         this.shouldResetScreen = true;
         this.updateDisplay();
     }
 
     switchMode(mode) {
+        const wasProgrammer = this.isProgrammer();
+        if (wasProgrammer && mode !== 'programmer') {
+            this.leaveProgrammerMode();
+        } else if (!wasProgrammer && mode === 'programmer') {
+            this.enterProgrammerMode();
+        }
         this.currentMode = mode;
         
         document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -450,10 +554,12 @@ class AdvancedCalculator {
         document.querySelectorAll('.buttons').forEach(buttons => {
             buttons.classList.remove('active');
         });
-        
+
+        // The digit/operator keypad stays visible in every mode; scientific and
+        // programmer keys are shown above it.
+        this.basicButtons.classList.add('active');
         switch (mode) {
             case 'basic':
-                this.basicButtons.classList.add('active');
                 break;
             case 'scientific':
                 this.scientificButtons.classList.add('active');
@@ -461,6 +567,25 @@ class AdvancedCalculator {
             case 'programmer':
                 this.programmerButtons.classList.add('active');
                 break;
+        }
+        this.updateDigitButtons();
+        this.updateDisplay();
+    }
+
+    // Entering programmer mode (always in DEC): operands become integers.
+    enterProgrammerMode() {
+        this.currentOperand = this.toIntegerString(this.currentOperand);
+        if (this.previousOperand !== '') {
+            this.previousOperand = this.toIntegerString(this.previousOperand);
+        }
+    }
+
+    // Leaving programmer mode: back to DEC, drop operators that only exist there.
+    leaveProgrammerMode() {
+        if (this.currentBase !== 10) this.changeBase('dec');
+        if (['<<', '>>', 'AND', 'OR', 'XOR'].includes(this.operation)) {
+            this.previousOperand = '';
+            this.operation = undefined;
         }
     }
 
@@ -521,9 +646,11 @@ class AdvancedCalculator {
         this.historyPanel.classList.toggle('active');
     }
 
-    addToHistory(entry) {
+    // `value` is the raw result (string in `base`), used to reuse it exactly.
+    addToHistory(entry, value) {
         const timestamp = new Date().toLocaleTimeString('fr-FR');
-        this.history.unshift({ entry, timestamp });
+        const base = this.isProgrammer() ? this.currentBase : 10;
+        this.history.unshift({ entry, timestamp, value, base });
         if (this.history.length > 50) {
             this.history.pop();
         }
@@ -549,15 +676,43 @@ class AdvancedCalculator {
             entryElement.textContent = String(item.entry ?? '');
 
             historyItem.append(timeElement, entryElement);
-            historyItem.addEventListener('click', () => {
-                const result = String(item.entry ?? '').split(' = ')[1];
-                if (result) {
-                    this.currentOperand = result.replace(/\s/g, '');
-                    this.updateDisplay();
-                }
-            });
+            historyItem.addEventListener('click', () => this.reuseHistoryItem(item));
             this.historyList.appendChild(historyItem);
         });
+    }
+
+    reuseHistoryItem(item) {
+        let text;
+        let base = 10;
+        if (typeof item.value === 'string') {
+            text = item.value;
+            base = [2, 8, 10, 16].includes(item.base) ? item.base : 10;
+        } else {
+            // Older entries only have the displayed text, formatted fr-FR ("1 234,5")
+            const shown = String(item.entry ?? '').split(' = ')[1];
+            if (!shown) return;
+            text = shown.replace(/\s/g, '').replace(/\u2212/g, '-').replace(',', '.');
+        }
+
+        let value;
+        if (this.isProgrammer()) {
+            const integer = base === 10
+                ? this.parseInteger(this.toIntegerString(text), 10)
+                : this.parseInteger(text, base);
+            if (integer === null) return;
+            value = this.formatInteger(integer);
+        } else if (base === 10) {
+            if (!Number.isFinite(parseFloat(text))) return;
+            value = text;
+        } else {
+            const integer = this.parseInteger(text, base);
+            if (integer === null) return;
+            value = integer.toString();
+        }
+
+        this.currentOperand = value;
+        this.shouldResetScreen = true;
+        this.updateDisplay();
     }
 
     clearHistory() {
@@ -568,13 +723,12 @@ class AdvancedCalculator {
 
     getFormattedNumber(number) {
         if (number === '' || number === null || number === undefined) return '';
+        if (this.isProgrammer() && this.currentBase !== 10) {
+            // Values are already strings in the current base (e.g. "1E" in HEX)
+            return number === 'Erreur' ? number : String(number).toUpperCase();
+        }
         if (typeof number === 'string' && isNaN(parseFloat(number))) return number;
         if (isNaN(number)) return '';
-        if (this.currentMode === 'programmer' && this.currentBase !== 10) {
-            // Strings are already in the current base (e.g. "11111111" in BIN)
-            if (typeof number === 'string') return number.toUpperCase();
-            return Math.floor(number).toString(this.currentBase).toUpperCase();
-        }
         return new Intl.NumberFormat('fr-FR', {
             maximumFractionDigits: 10
         }).format(number);

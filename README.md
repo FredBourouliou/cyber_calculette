@@ -10,20 +10,20 @@ A themed browser calculator with basic, scientific and programmer modes, written
 
 - **Basic mode**: addition, subtraction, multiplication, division, modulo (`%`), memory keys (MC, MR, M+, M−), clear and backspace. Division by zero shows an error instead of `Infinity`.
 - **Scientific mode**: sin, cos, tan (in degrees), log₁₀, ln, √, x², x³, eˣ, π, e, n!, |x|, round, ceil, floor. Each function applies to the number on the display.
-- **Programmer mode**: converts the current integer between HEX, DEC, OCT and BIN; bitwise NOT, and AND / OR / XOR against the previous operand.
-- **History**: the last 50 calculations with a timestamp; clicking an entry puts its result back on the display.
+- **Programmer mode**: integer arithmetic in HEX, DEC, OCT or BIN. Operands are typed and shown in the current base, and `+ − × ÷ %` work on integers (`÷` is integer division, so `FF ÷ 2 = 7F`). `<<` and `>>` shift bits (`8 << 2 = 32`), `AND`, `OR` and `XOR` are binary operators like `+`, and `NOT` applies to the displayed value. Changing the base converts the display and any pending operand, and keys that are invalid in the current base are disabled. Integers are arbitrary-precision (`BigInt`), so results stay exact at any size.
+- **Keypad**: the digit and operator keys stay visible in every mode; scientific and programmer keys appear above them.
+- **History**: the last 50 calculations with a timestamp; clicking an entry puts its exact result back on the display (`2,5` stays `2,5`). Results computed in HEX, OCT or BIN are tagged with their base and converted when reused elsewhere.
 - **Themes**: seven visual themes selectable from a menu, plus a separate dark-mode toggle.
 - **Sound**: short tones generated with the Web Audio API on key presses, can be muted.
-- **Keyboard**: digits, `.`, `+ - * / %`, `Enter` or `=`, `Esc` (clear), `Backspace`, `H` (history panel).
+- **Keyboard**: digits, `.`, `+ - * / %`, `Enter` or `=`, `Esc` (clear), `Backspace`, `H` (history panel); in programmer mode also `A`–`F` (in HEX), `<` and `>` (shifts).
 - **Persistence**: theme, dark mode, sound setting, mode and history are saved in `localStorage`.
 
 Numbers are formatted with the French locale (decimal comma, space as thousands separator).
 
 ## Known limitations
 
-- The `<<` and `>>` buttons in programmer mode are not wired to any action yet.
-- Arithmetic operators parse operands as decimal, so `+ - × ÷` are only reliable in DEC.
-- Reusing a decimal result from the history drops the fractional part (`2,5` is read back as `2`).
+- Programmer mode has no fixed word size (8/16/32/64 bits): negative numbers are shown with a minus sign rather than in two's complement, and `NOT x` gives `−(x + 1)`.
+- Programmer results saved in the history before this version carry no base tag and are read back as decimal.
 
 ## How it is built
 

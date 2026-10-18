@@ -392,6 +392,15 @@ body::before {
 
 .buttons-container {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Mode-specific keys sit above the always-visible keypad */
+.scientific-buttons,
+.programmer-buttons {
+    order: -1;
 }
 
 .buttons {
@@ -644,7 +653,7 @@ kbd {
     --accent-yellow: #ffd700;
 }
 
-.theme-steampunk body {
+body.theme-steampunk {
     font-family: 'Cinzel', 'Georgia', serif;
 }
 
@@ -671,7 +680,7 @@ kbd {
     --accent-yellow: #ffa500;
 }
 
-.theme-post-apocalyptic body {
+body.theme-post-apocalyptic {
     font-family: 'Special Elite', 'Courier New', monospace;
 }
 
@@ -722,7 +731,7 @@ kbd {
     --accent-yellow: #ffff00;
 }
 
-.theme-retro-futuristic body {
+body.theme-retro-futuristic {
     font-family: 'Press Start 2P', 'Courier New', monospace;
 }
 
@@ -755,7 +764,7 @@ kbd {
     --accent-yellow: #ffd700;
 }
 
-.theme-fantasy body {
+body.theme-fantasy {
     font-family: 'UnifrakturMaguntia', 'Cinzel', serif;
 }
 
@@ -801,7 +810,7 @@ kbd {
     --text-secondary: #008f11;
 }
 
-.theme-matrix body {
+body.theme-matrix {
     font-family: 'VT323', 'Space Mono', monospace;
 }
 
@@ -836,7 +845,7 @@ kbd {
     z-index: 1;
 }
 
-.theme-matrix body::after {
+body.theme-matrix::after {
     content: '01001101 01000001 01010100 01010010 01001001 01011000';
     position: fixed;
     top: 10px;
@@ -863,7 +872,7 @@ kbd {
     --accent-yellow: #ffff00;
 }
 
-.theme-neon body {
+body.theme-neon {
     font-family: 'Bungee', 'Audiowide', sans-serif;
 }
 
@@ -1005,6 +1014,14 @@ kbd {
         animation: none !important;
         transition: none !important;
     }
+}
+
+button:disabled,
+button:disabled:hover {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 button:focus-visible {
