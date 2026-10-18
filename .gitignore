@@ -321,4 +321,7 @@ site/
 # SvelteKit build / generate output
 .svelte-kit
 
+# Claude Code local settings
+.claude/
+
 # End of .gitignore

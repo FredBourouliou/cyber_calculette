@@ -532,16 +532,25 @@ class AdvancedCalculator {
     }
 
     updateHistoryDisplay() {
-        this.historyList.innerHTML = '';
+        this.historyList.replaceChildren();
         this.history.forEach(item => {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
-            historyItem.innerHTML = `
-                <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.25rem;">${item.timestamp}</div>
-                <div>${item.entry}</div>
-            `;
+
+            // Build nodes with textContent: history comes from localStorage
+            // and must never be parsed as HTML.
+            const timeElement = document.createElement('div');
+            timeElement.style.fontSize = '0.7rem';
+            timeElement.style.color = 'var(--text-secondary)';
+            timeElement.style.marginBottom = '0.25rem';
+            timeElement.textContent = String(item.timestamp ?? '');
+
+            const entryElement = document.createElement('div');
+            entryElement.textContent = String(item.entry ?? '');
+
+            historyItem.append(timeElement, entryElement);
             historyItem.addEventListener('click', () => {
-                const result = item.entry.split(' = ')[1];
+                const result = String(item.entry ?? '').split(' = ')[1];
                 if (result) {
                     this.currentOperand = result.replace(/\s/g, '');
                     this.updateDisplay();
@@ -562,6 +571,8 @@ class AdvancedCalculator {
         if (typeof number === 'string' && isNaN(parseFloat(number))) return number;
         if (isNaN(number)) return '';
         if (this.currentMode === 'programmer' && this.currentBase !== 10) {
+            // Strings are already in the current base (e.g. "11111111" in BIN)
+            if (typeof number === 'string') return number.toUpperCase();
             return Math.floor(number).toString(this.currentBase).toUpperCase();
         }
         return new Intl.NumberFormat('fr-FR', {
